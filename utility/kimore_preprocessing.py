@@ -42,7 +42,7 @@ BODY_2_ID = {   'Spine_Base':0,
 			}
 
 DATA_NAMES = ['JointPosition', 'JointOrinetation']
-CLASSES = ['Parkinson', 'Stroke', 'Healthy', 'Backpain', 'Expert']
+CLASSES = ['Parkinson', 'Stroke', 'Healthy', 'Backpain', 'Expert', 'NotExpert']
 MOVEMENT_CLASSES = ['Es1', 'Es2', 'Es3', 'Es4', 'Es5']
 
 
@@ -145,7 +145,7 @@ def kinect_positions_to_xyz_(positions):
 
 def create_train_test_dirs(path):
 	image_names = []
-	full_path_images = []
+	
 
 	for (dirpath, dirnames, filenames) in walk(path):
 		if dirpath.endswith(dir_pattern):
