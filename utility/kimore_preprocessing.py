@@ -153,8 +153,8 @@ def kinect_positions_to_xyz_(positions):
 
 def create_train_test_dirs(train_imgs, test_imgs):
 	image_names = []
-	train_dir = join(_getArgs.output_dir, 'train')
-	test_dir = join(_getArgs.output_dir, 'test')
+	train_dir = join(_getArgs().output_dir, 'train')
+	test_dir = join(_getArgs().output_dir, 'test')
 
 	for cl in CLASSES:
 		train_dir = join(images_dir, cl)
