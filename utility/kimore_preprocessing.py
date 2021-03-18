@@ -182,8 +182,7 @@ def copy_img(dest_dir, imgs):
 
 
 
-def divide_test_train(images,\ 
-							testing_rate=0.2):
+def divide_test_train(images, testing_rate=0.2):
 	assert len(images)>0
 	train_images = []
 	test_images = []
