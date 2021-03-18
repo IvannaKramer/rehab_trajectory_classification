@@ -206,7 +206,7 @@ def get_images():
 	for (dirpath, dirnames, filenames) in walk(img_folder):
 			for f in filenames:
 				if f.endswith('.png'):
-					img_folder.append(join(dirpath, f))
+					images.append(join(dirpath, f))
 	return images
 					
 
