@@ -58,12 +58,12 @@ def _getArgs():
 
 
 
-def convert_trajectories(store_in_same_dir=True,
-						 dir_pattern='Raw',
+def convert_trajectories(dir_pattern='Raw',
 						 store_as_rgb=True):
 	path = _getArgs().input_dir
 	training_fodler = _getArgs().output_dir
 	plotted_once = False
+	broken_files= []
 
 	for (dirpath, dirnames, filenames) in walk(path):
 		if dirpath.endswith(dir_pattern):
@@ -72,38 +72,41 @@ def convert_trajectories(store_in_same_dir=True,
 					print(dirpath)
 					print(f)
 					path_to_file = join(dirpath, f)
-					seq_df = pd.read_csv(path_to_file,
+					try:
+						seq_df = pd.read_csv(path_to_file,
 									 index_col=False)
-					trajectories = []
-					for ind in range(seq_df.shape[0]):
-						positions = seq_df.iloc[ind]
-						#print(positions.shape)	 
-						joints = extract_positions(positions)
-						trajectories.append(joints)						
-					_trajectories = np.array(trajectories)
-					_trajectories = np.swapaxes(_trajectories, 0,1)
-					print(_trajectories.shape)
-					#_trajectories -= np.min(_trajectories)
-					#_trajectories /= np.max(_trajectories)	
-					if plotted_once:
-						print(trajectories)
-						plt.imshow(_trajectories, interpolation='nearest',\
-														 vmin=0, vmax=255)
-						plt.show()		
-						plotted_once = False
-				
+						trajectories = []
+						for ind in range(seq_df.shape[0]):
+							positions = seq_df.iloc[ind]
+							#print(positions.shape)	 
+							joints = extract_positions(positions)
+							trajectories.append(joints)						
+						_trajectories = np.array(trajectories)
+						_trajectories = np.swapaxes(_trajectories, 0,1)
+						print(_trajectories.shape)
+						#_trajectories -= np.min(_trajectories)
+						#_trajectories /= np.max(_trajectories)	
+						if plotted_once:
+							print(trajectories)
+							plt.imshow(_trajectories, interpolation='nearest',\
+															 vmin=0, vmax=255)
+							plt.show()		
+							plotted_once = False
+					
 
-					f = f.replace('csv', 'png')
-					_class = get_pathology_from_path(dirpath)
-					f = _class + '_' + f
-					image_filename = join(training_fodler, f)#
+						f = f.replace('csv', 'png')
+						_class = get_pathology_from_path(dirpath)
+						f = _class + '_' + f
+						image_filename = join(training_fodler, f)#
 
-					matplotlib.image.imsave(image_filename, _trajectories,\
-														  vmin=0, vmax=255)
-						
-	
-	if not store_in_same_dir:
-		path = _getArgs().output_dir
+						matplotlib.image.imsave(image_filename, _trajectories,\
+															  vmin=0, vmax=255)
+					except pd.errors.ParserError:
+						print('Broken file=', join(dirpath, f))
+						broken_files.append(join(dirpath, f))
+
+							
+	print(broken_files)
 
 def extract_positions(positions):
 	joints = []
