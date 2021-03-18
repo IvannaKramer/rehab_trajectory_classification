@@ -3,14 +3,17 @@ import numpy as np
 from argparse import ArgumentParser
 from os import getcwd
 from os import walk
+from os import makedirs
 from os.path import expanduser
 from os.path import join
 import pandas as pd
+import random
 
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import matplotlib
 from shutil import copyfile
+from shutil import move
 
 #ID=index in the csv line
 #KINECT skelet = 25 joints
@@ -42,7 +45,7 @@ BODY_2_ID = {   'Spine_Base':0,
 			}
 
 DATA_NAMES = ['JointPosition', 'JointOrinetation']
-CLASSES = ['Parkinson', 'Stroke', 'Healthy', 'Backpain', 'Expert', 'NotExpert']
+CLASSES = ['Parkinson', 'Stroke', 'BackPain', 'Expert', 'NotExpert']
 MOVEMENT_CLASSES = ['Es1', 'Es2', 'Es3', 'Es4', 'Es5']
 
 
@@ -64,6 +67,7 @@ def convert_trajectories(dir_pattern='Raw',
 	training_fodler = _getArgs().output_dir
 	plotted_once = False
 	broken_files= []
+	images = []
 
 	for (dirpath, dirnames, filenames) in walk(path):
 		if dirpath.endswith(dir_pattern):
@@ -95,9 +99,10 @@ def convert_trajectories(dir_pattern='Raw',
 					
 
 						f = f.replace('csv', 'png')
-						_class = get_pathology_from_path(dirpath)
+						_class = get_class_from_path(dirpath)
 						f = _class + '_' + f
-						image_filename = join(training_fodler, f)#
+						image_filename = join(training_fodler, f)
+						images.append(image_filename)
 
 						matplotlib.image.imsave(image_filename, _trajectories,\
 															  vmin=0, vmax=255)
@@ -107,6 +112,7 @@ def convert_trajectories(dir_pattern='Raw',
 
 							
 	print(broken_files)
+	return images
 
 def extract_positions(positions):
 	joints = []
@@ -122,14 +128,13 @@ def extract_positions(positions):
 
 	return joints_np 
 
-def get_pathology_from_path(path):
+def get_class_from_path(path):
 	_class = ''
 	for p in CLASSES:
-
 		if path.find(p) != -1:
 			_class =  p
 	if len(_class) < 2:
-		_class = 'Healthy'
+		_class = 'NoClass'
 	return _class
 
 
@@ -146,26 +151,65 @@ def kinect_positions_to_xyz_(positions):
 
 
 
-def create_train_test_dirs(path):
+def create_train_test_dirs(train_imgs, test_imgs):
 	image_names = []
-	
+	train_dir = join(_getArgs.output_dir, 'train')
+	test_dir = join(_getArgs.output_dir, 'test')
 
-	for (dirpath, dirnames, filenames) in walk(path):
-		if dirpath.endswith(dir_pattern):
+	for cl in CLASSES:
+		train_dir = join(images_dir, cl)
+		test_dir = join(images_dir, cl)
+		try:
+		    makedirs(train_dir)
+		    makedirs(test_dir)
+		except OSError as e:
+		    if e.errno != errno.EEXIST:
+		        raise
+	copy_img(train_dir, train_imgs)
+	copy_img(test_dir, test_imgs)
+		#shutil.move("path/to/current/file.foo", "path/to/new/destination/for/file.foo")
+
+
+
+def copy_img(dest_dir, imgs):
+	for im_src in imgs:
+		cl = get_class_from_path(im_src)
+		im_name = im_src.split('/')[-1]
+		im_dest = join(dest_dir, cl)
+		im_dest = join(im_dest, im_name)
+		print('Coping from=', im_src, ' to=', im_dest)
+		dest = shutil.copy(im_src, im_dest)
+
+
+
+def divide_test_train(images,\ 
+							testing_rate=0.2):
+	assert len(images)>0
+	train_images = []
+	test_images = []
+	test_number = int(len(images) *\
+							 testing_rate)
+	test_images = random.sample(images, \
+							test_number)
+	train_images = [im for im in images\
+						if im not in set(test_number)]
+
+	print(test_images)
+	print(train_images)
+
+	return train_images, test_images
+
+
+
+def get_images():
+	images = []
+	img_folder = _getArgs().output_dir
+	for (dirpath, dirnames, filenames) in walk(img_folder):
 			for f in filenames:
-				if f.endswith('.png'):#
-					image_names.append(f)
-					full_path_images.append()
-					print(f)
-						
-	try:
-	    copyfile(source, target)
-	except IOError as e:
-	    print("Unable to copy file. %s" % e)
-	    exit(1)
-	except:
-	    print("Unexpected error:", sys.exc_info())
-	    exit(1) 
+				if f.endswith('.png'):
+					img_folder.appned(join(dirpath, f))
+	return images
+					
 
 
 
@@ -184,4 +228,6 @@ def visualize_skeleton(x,y,z):
 if __name__ == '__main__':
     args = _getArgs()
     print(args.input_dir)
-    convert_trajectories()
+    images = get_images() #convert_trajectories()
+    train, test = divide_test_train(images)
+    create_train_test_dirs(train, test)
