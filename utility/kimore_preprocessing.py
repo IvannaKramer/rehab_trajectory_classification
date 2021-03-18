@@ -63,12 +63,13 @@ def convert_trajectories(store_in_same_dir=True,
 						 store_as_rgb=True):
 	path = _getArgs().input_dir
 	training_fodler = _getArgs().output_dir
-	plotted_once = True
+	plotted_once = False
 
 	for (dirpath, dirnames, filenames) in walk(path):
 		if dirpath.endswith(dir_pattern):
 			for f in filenames:
 				if f.startswith(DATA_NAMES[0]) and f.endswith('.csv'):
+					print(dirpath)
 					print(f)
 					path_to_file = join(dirpath, f)
 					seq_df = pd.read_csv(path_to_file,
@@ -119,7 +120,6 @@ def extract_positions(positions):
 	return joints_np 
 
 def get_pathology_from_path(path):
-	print(path)
 	_class = ''
 	for p in CLASSES:
 
