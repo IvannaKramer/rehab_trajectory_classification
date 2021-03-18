@@ -178,7 +178,7 @@ def copy_img(dest_dir, imgs):
 		im_dest = join(dest_dir, cl)
 		im_dest = join(im_dest, im_name)
 		print('Coping from=', im_src, ' to=', im_dest)
-		dest = shutil.copy(im_src, im_dest)
+		dest = copy(im_src, im_dest)
 
 
 
