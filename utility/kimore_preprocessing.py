@@ -157,8 +157,8 @@ def create_train_test_dirs(train_imgs, test_imgs):
 	test_dir = join(_getArgs().output_dir, 'test')
 
 	for cl in CLASSES:
-		train_dir = join(images_dir, cl)
-		test_dir = join(images_dir, cl)
+		train_dir = join(train_dir, cl)
+		test_dir = join(test_dir, cl)
 		try:
 		    makedirs(train_dir)
 		    makedirs(test_dir)
