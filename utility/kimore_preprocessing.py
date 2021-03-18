@@ -191,7 +191,7 @@ def divide_test_train(images, testing_rate=0.2):
 	test_images = random.sample(images, \
 							test_number)
 	train_images = [im for im in images\
-						if im not in set(test_number)]
+						if im not in set(test_images)]
 
 	print(test_images)
 	print(train_images)
