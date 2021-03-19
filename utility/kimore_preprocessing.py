@@ -8,11 +8,12 @@ from os.path import expanduser
 from os.path import join
 import pandas as pd
 import random
+import errno
 
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import matplotlib
-from shutil import copyfile
+from shutil import copy
 from shutil import move
 
 #ID=index in the csv line
@@ -157,11 +158,11 @@ def create_train_test_dirs(train_imgs, test_imgs):
 	test_dir = join(_getArgs().output_dir, 'test')
 
 	for cl in CLASSES:
-		train_dir = join(train_dir, cl)
-		test_dir = join(test_dir, cl)
+		_train_dir = join(train_dir, cl)
+		_test_dir = join(test_dir, cl)
 		try:
-		    makedirs(train_dir)
-		    makedirs(test_dir)
+		    makedirs(_train_dir)
+		    makedirs(_test_dir)
 		except OSError as e:
 		    if e.errno != errno.EEXIST:
 		        raise
@@ -227,6 +228,6 @@ def visualize_skeleton(x,y,z):
 if __name__ == '__main__':
     args = _getArgs()
     print(args.input_dir)
-    images = get_images() #convert_trajectories()
+    images = convert_trajectories()
     train, test = divide_test_train(images)
     create_train_test_dirs(train, test)
