@@ -8,11 +8,12 @@ from os.path import expanduser
 from os.path import join
 import pandas as pd
 import random
+import errno
 
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import matplotlib
-from shutil import copyfile
+from shutil import copy
 from shutil import move
 
 #ID=index in the csv line
@@ -178,7 +179,7 @@ def copy_img(dest_dir, imgs):
 		im_dest = join(dest_dir, cl)
 		im_dest = join(im_dest, im_name)
 		print('Coping from=', im_src, ' to=', im_dest)
-		dest = shutil.copy(im_src, im_dest)
+		dest = copy(im_src, im_dest)
 
 
 
@@ -227,6 +228,6 @@ def visualize_skeleton(x,y,z):
 if __name__ == '__main__':
     args = _getArgs()
     print(args.input_dir)
-    images = get_images() #convert_trajectories()
+    images = convert_trajectories()
     train, test = divide_test_train(images)
     create_train_test_dirs(train, test)
