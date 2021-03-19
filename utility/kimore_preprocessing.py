@@ -157,11 +157,11 @@ def create_train_test_dirs(train_imgs, test_imgs):
 	test_dir = join(_getArgs().output_dir, 'test')
 
 	for cl in CLASSES:
-		train_dir = join(train_dir, cl)
-		test_dir = join(test_dir, cl)
+		_train_dir = join(train_dir, cl)
+		_test_dir = join(test_dir, cl)
 		try:
-		    makedirs(train_dir)
-		    makedirs(test_dir)
+		    makedirs(_train_dir)
+		    makedirs(_test_dir)
 		except OSError as e:
 		    if e.errno != errno.EEXIST:
 		        raise
