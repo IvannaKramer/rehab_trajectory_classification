@@ -102,10 +102,9 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 							plotted_once = False
 					
 						_class = get_class_from_path(dirpath)
-						npz_f = f.replace('png', 'npz')
+						npz_f = f.replace('csv', 'npz')
 
 						if not npzs_only:
-						
 							f = f.replace('csv', 'png')						
 							f = _class + '_' + f
 							image_filename = join(training_fodler, f)
@@ -153,7 +152,6 @@ def get_class_from_path(path):
 
 
 
-
 def kinect_positions_to_xyz_(positions):
 	x,y,z = [], [] , []
 	for ind in BODY_2_ID.values():
@@ -169,24 +167,22 @@ def create_train_test_dirs(train_files, test_files, npz_only):
 	train_dir = join(_getArgs().output_dir, 'train')
 	test_dir = join(_getArgs().output_dir, 'test')
 
-	for cl in CLASSES:
-
-		
+	for cl in CLASSES:	
 		try:
 			if not npz_only:
 				_train_dir = join(train_dir + '/img/', cl)
 				_test_dir = join(test_dir + '/img/', cl)
-		    	makedirs(_train_dir)
-		    	makedirs(_test_dir)
-		    	copy_files(_train_dir, train_files, cl)
+				makedirs(_train_dir)
+				makedirs(_test_dir)
+				copy_files(_train_dir, train_files, cl)
 				copy_files(_test_dir, test_files, cl)
-		    
-		    _train_dir = join(train_dir + '/npz/', cl)
-			_test_dir = join(test_dir + '/npz/', cl)
-			copy_files(_train_dir, train_files, cl)
-			copy_files(test_dir, test_files, cl)
-
-
+			
+			n_train_dir = join(train_dir + '/npz/', cl)
+			n_test_dir = join(test_dir + '/npz/', cl)
+			makedirs(n_train_dir)
+			makedirs(n_test_dir)
+			copy_files(n_train_dir, train_files, cl, imgs=False)
+			copy_files(n_test_dir, test_files, cl, imgs=False)
 
 		except OSError as e:
 		    if e.errno != errno.EEXIST:
@@ -196,18 +192,24 @@ def create_train_test_dirs(train_files, test_files, npz_only):
 
 
 def copy_files(dest, training_files, cl, imgs=True):
-	for npz_src in training_files:
-		npz_name = npz_src.split('/')[-1]
+    print('dest=', dest)
+    for npz_src in training_files:
+	    if npz_src.find(cl) > -1:
+		    npz_name = npz_src.split('/')[-1]
 
-		if imgs:
-			im_src = npz_src.replace('npz', 'png')
-			im_dest = join(dest, cl)
-			im_dest = join(im_dest, im_name)
-			copy(im_src, im_dest)
-		
-		npz_dest = join(dest+'/npz/', cl)
-		npz_dest = join(dest, npz_name)
-		copy(npz_src, npz_dest)
+		    if imgs:
+		        im_name = npz_name.replace('npz', 'png')
+		        im_src = npz_src.replace('npz', 'png')
+		        print('dest=', dest)
+		        #im_dest = join(dest, cl)
+
+		        im_dest = join(dest, im_name)
+		        print('im_src=', im_src)
+		        print('im_dist=', im_dest)
+		        copy(im_src, im_dest)
+            else:   
+                npz_dest = join(dest, npz_name)
+		        copy(npz_src, npz_dest)
 
 
 
@@ -215,7 +217,7 @@ def divide_test_train(training_files, testing_rate=0.2):
 	assert len(training_files)>0
 	train_files = []
 	test_files = []
-	test_files = int(len(training_files) *\
+	test_number = int(len(training_files) *\
 							 testing_rate)
 	test_files = random.sample(training_files, \
 							test_number)
@@ -257,4 +259,4 @@ if __name__ == '__main__':
     print(args.input_dir)
     training_files = convert_trajectories(True, True)
     train, test = divide_test_train(training_files)
-    create_train_test_dirs(train, test)
+    create_train_test_dirs(train, test, npz_only=False)
