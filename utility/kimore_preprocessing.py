@@ -207,9 +207,9 @@ def copy_files(dest, training_files, cl, imgs=True):
 		        print('im_src=', im_src)
 		        print('im_dist=', im_dest)
 		        copy(im_src, im_dest)
-            else:   
-                npz_dest = join(dest, npz_name)
-		        copy(npz_src, npz_dest)
+		    else:
+		    	npz_dest = join(dest, npz_name)
+		    	copy(npz_src, npz_dest)
 
 
 
