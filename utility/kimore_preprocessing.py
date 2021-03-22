@@ -62,13 +62,13 @@ def _getArgs():
 
 
 
-def convert_trajectories(dir_pattern='Raw',
+def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 						 store_as_rgb=True):
 	path = _getArgs().input_dir
 	training_fodler = _getArgs().output_dir
 	plotted_once = False
 	broken_files= []
-	images = []
+	training_files = []
 
 	for (dirpath, dirnames, filenames) in walk(path):
 		if dirpath.endswith(dir_pattern):
@@ -89,6 +89,9 @@ def convert_trajectories(dir_pattern='Raw',
 						_trajectories = np.array(trajectories)
 						_trajectories = np.swapaxes(_trajectories, 0,1)
 						print(_trajectories.shape)
+						if normalized:
+							_trajectories -= np.min(_trajectories)
+							_trajectories /= np.max(_trajectories)	
 						#_trajectories -= np.min(_trajectories)
 						#_trajectories /= np.max(_trajectories)	
 						if plotted_once:
@@ -98,22 +101,32 @@ def convert_trajectories(dir_pattern='Raw',
 							plt.show()		
 							plotted_once = False
 					
-
-						f = f.replace('csv', 'png')
 						_class = get_class_from_path(dirpath)
-						f = _class + '_' + f
-						image_filename = join(training_fodler, f)
-						images.append(image_filename)
+						npz_f = f.replace('png', 'npz')
 
-						matplotlib.image.imsave(image_filename, _trajectories,\
+						if not npzs_only:
+						
+							f = f.replace('csv', 'png')						
+							f = _class + '_' + f
+							image_filename = join(training_fodler, f)
+							matplotlib.image.imsave(image_filename, _trajectories,\
 															  vmin=0, vmax=255)
+						
+						npz_f = _class + '_' + npz_f
+						npz_filename = join(training_fodler, npz_f)
+						training_files.append(npz_filename)
+
+						npz =  np.savez(npz_filename, name1=_trajectories)
+						#npz =  np.savez('mat.npz', name1=arr1)
+
+
 					except pd.errors.ParserError:
 						print('Broken file=', join(dirpath, f))
 						broken_files.append(join(dirpath, f))
 
 							
 	print(broken_files)
-	return images
+	return training_files
 
 def extract_positions(positions):
 	joints = []
@@ -152,52 +165,66 @@ def kinect_positions_to_xyz_(positions):
 
 
 
-def create_train_test_dirs(train_imgs, test_imgs):
-	image_names = []
+def create_train_test_dirs(train_files, test_files, npz_only):
 	train_dir = join(_getArgs().output_dir, 'train')
 	test_dir = join(_getArgs().output_dir, 'test')
 
 	for cl in CLASSES:
-		_train_dir = join(train_dir, cl)
-		_test_dir = join(test_dir, cl)
+
+		
 		try:
-		    makedirs(_train_dir)
-		    makedirs(_test_dir)
+			if not npz_only:
+				_train_dir = join(train_dir + '/img/', cl)
+				_test_dir = join(test_dir + '/img/', cl)
+		    	makedirs(_train_dir)
+		    	makedirs(_test_dir)
+		    	copy_files(_train_dir, train_files, cl)
+				copy_files(_test_dir, test_files, cl)
+		    
+		    _train_dir = join(train_dir + '/npz/', cl)
+			_test_dir = join(test_dir + '/npz/', cl)
+			copy_files(_train_dir, train_files, cl)
+			copy_files(test_dir, test_files, cl)
+
+
+
 		except OSError as e:
 		    if e.errno != errno.EEXIST:
 		        raise
-	copy_img(train_dir, train_imgs)
-	copy_img(test_dir, test_imgs)
-		#shutil.move("path/to/current/file.foo", "path/to/new/destination/for/file.foo")
+
+	#shutil.move("path/to/current/file.foo", "path/to/new/destination/for/file.foo")
+
+
+def copy_files(dest, training_files, cl, imgs=True):
+	for npz_src in training_files:
+		npz_name = npz_src.split('/')[-1]
+
+		if imgs:
+			im_src = npz_src.replace('npz', 'png')
+			im_dest = join(dest, cl)
+			im_dest = join(im_dest, im_name)
+			copy(im_src, im_dest)
+		
+		npz_dest = join(dest+'/npz/', cl)
+		npz_dest = join(dest, npz_name)
+		copy(npz_src, npz_dest)
 
 
 
-def copy_img(dest_dir, imgs):
-	for im_src in imgs:
-		cl = get_class_from_path(im_src)
-		im_name = im_src.split('/')[-1]
-		im_dest = join(dest_dir, cl)
-		im_dest = join(im_dest, im_name)
-		print('Coping from=', im_src, ' to=', im_dest)
-		dest = copy(im_src, im_dest)
-
-
-
-def divide_test_train(images, testing_rate=0.2):
-	assert len(images)>0
-	train_images = []
-	test_images = []
-	test_number = int(len(images) *\
+def divide_test_train(training_files, testing_rate=0.2):
+	assert len(training_files)>0
+	train_files = []
+	test_files = []
+	test_files = int(len(training_files) *\
 							 testing_rate)
-	test_images = random.sample(images, \
+	test_files = random.sample(training_files, \
 							test_number)
-	train_images = [im for im in images\
-						if im not in set(test_images)]
+	train_files = [im for im in training_files\
+						if im not in set(test_files)]
 
-	print(test_images)
-	print(train_images)
 
-	return train_images, test_images
+
+	return train_files, test_files
 
 
 
@@ -228,6 +255,6 @@ def visualize_skeleton(x,y,z):
 if __name__ == '__main__':
     args = _getArgs()
     print(args.input_dir)
-    images = convert_trajectories()
-    train, test = divide_test_train(images)
+    training_files = convert_trajectories(True, True)
+    train, test = divide_test_train(training_files)
     create_train_test_dirs(train, test)
