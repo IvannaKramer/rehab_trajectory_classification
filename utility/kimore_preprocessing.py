@@ -46,7 +46,7 @@ BODY_2_ID = {   'Spine_Base':0,
 			}
 
 DATA_NAMES = ['JointPosition', 'JointOrinetation']
-CLASSES = ['Parkinson', 'Stroke', 'BackPain', 'Expert', 'NotExpert']
+CLASSES = ['Parkinson', 'Stroke', 'BackPain', '_Expert', 'NotExpert']
 MOVEMENT_CLASSES = ['Es1', 'Es2', 'Es3', 'Es4', 'Es5']
 
 
@@ -253,10 +253,12 @@ def visualize_skeleton(x,y,z):
 	fig.update_layout(width=600, height=600)
 	fig.show()
 
+
 def create_csv_from_list(name, files):
 	with open(name, "w", newline="") as f:
 		writer = csv.writer(f)
 		writer.writerows(files)
+
 
 
 if __name__ == '__main__':
