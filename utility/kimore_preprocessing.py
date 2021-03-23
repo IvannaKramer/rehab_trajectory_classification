@@ -224,8 +224,8 @@ def divide_test_train(training_files, testing_rate=0.2):
 	train_files = [im for im in training_files\
 						if im not in set(test_files)]
 
-    create_csv_from_list('training.csv',train_files)
-    create_csv_from_list('test.csv', test_files)
+	create_csv_from_list('training.csv',train_files)
+	create_csv_from_list('test.csv', test_files)
 
 	return train_files, test_files
 
@@ -254,9 +254,9 @@ def visualize_skeleton(x,y,z):
 	fig.show()
 
 def create_csv_from_list(name, files):
-    with open(name, "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerows(files)
+	with open(name, "w", newline="") as f:
+		writer = csv.writer(f)
+		writer.writerows(files)
 
 
 if __name__ == '__main__':
