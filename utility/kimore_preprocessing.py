@@ -45,7 +45,7 @@ BODY_2_ID = {   'Spine_Base':0,
 				'Thumb_Right':98
 			}
 
-DATA_NAMES = ['JointPosition', 'JointOrinetation']
+DATA_NAMES = ['JointPosition', 'JointOrientation']
 CLASSES = ['Parkinson', 'Stroke', 'BackPain', '_Expert', 'NotExpert']
 MOVEMENT_CLASSES = ['Es1', 'Es2', 'Es3', 'Es4', 'Es5']
 
@@ -72,56 +72,76 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 
 	for (dirpath, dirnames, filenames) in walk(path):
 		if dirpath.endswith(dir_pattern):
+			f_pos, f_or  = '', ''
 			for f in filenames:
 				if f.startswith(DATA_NAMES[0]) and f.endswith('.csv'):
-					print(dirpath)
-					print(f)
-					path_to_file = join(dirpath, f)
-					try:
-						seq_df = pd.read_csv(path_to_file,
-									 index_col=False)
-						trajectories = []
-						for ind in range(seq_df.shape[0]):
-							positions = seq_df.iloc[ind]
-							#print(positions.shape)	 
-							joints = extract_positions(positions)
-							trajectories.append(joints)						
-						_trajectories = np.array(trajectories)
-						_trajectories = np.swapaxes(_trajectories, 0,1)
-						print(_trajectories.shape)
-						if normalized:
-							_trajectories -= np.min(_trajectories)
-							_trajectories /= np.max(_trajectories)	
-						#_trajectories -= np.min(_trajectories)
-						#_trajectories /= np.max(_trajectories)	
-						if plotted_once:
-							print(trajectories)
-							plt.imshow(_trajectories, interpolation='nearest',\
-															 vmin=0, vmax=255)
-							plt.show()		
-							plotted_once = False
-					
-						_class = get_class_from_path(dirpath)
-						npz_f = f.replace('csv', 'npz')
+					f_pos = f
+				elif f.startswith(DATA_NAMES[1]) and f.endswith('.csv'):
+					f_or = f
+			
+			print(dirpath)
+			print(f)
+			path_to_pos= join(dirpath, f_pos)
+			path_to_or= join(dirpath, f_or)
+			print(path_to_pos)
+			print(path_to_or)
+			try:
+				pos_df = pd.read_csv(path_to_pos,
+							 index_col=False)
+				or_df = pd.read_csv(path_to_or,
+							 index_col=False)
+				pos_trajectories = []
+				or_trajectorie  = []
 
-						if not npzs_only:
-							f = f.replace('csv', 'png')						
-							f = _class + '_' + f
-							image_filename = join(training_fodler, f)
-							matplotlib.image.imsave(image_filename, _trajectories,\
-															  vmin=0, vmax=255)
-						
-						npz_f = _class + '_' + npz_f
-						npz_filename = join(training_fodler, npz_f)
-						training_files.append(npz_filename)
+				for ind in range(pos_df.shape[0]):
+					positions = pos_df.iloc[ind]
+					#print(positions.shape)	 
+					joints = extract_positions(positions)
+					trajectories.append(joints)						
+				
+				for ind in range(or_df.shape[0]):
+					orientations = or_df.iloc[ind]
+					#print(positions.shape)	 
+					joints = extract_orientations(positions)
+					trajectories.append(joints)						
+								
 
-						npz =  np.savez(npz_filename, name1=_trajectories)
-						#npz =  np.savez('mat.npz', name1=arr1)
+				_trajectories = np.array(trajectories)
+				_trajectories = np.swapaxes(_trajectories, 0,1)
+				print(_trajectories.shape)
+				if normalized:
+					_trajectories -= np.min(_trajectories)
+					_trajectories /= np.max(_trajectories)	
+				#_trajectories -= np.min(_trajectories)
+				#_trajectories /= np.max(_trajectories)	
+				if plotted_once:
+					print(trajectories)
+					plt.imshow(_trajectories, interpolation='nearest',\
+													 vmin=0, vmax=255)
+					plt.show()		
+					plotted_once = False
+			
+				_class = get_class_from_path(dirpath)
+				npz_f = f.replace('csv', 'npz')
+
+				if not npzs_only:
+					f = f.replace('csv', 'png')						
+					f = _class + '_' + f
+					image_filename = join(training_fodler, f)
+					matplotlib.image.imsave(image_filename, _trajectories,\
+													  vmin=0, vmax=255)
+				
+				npz_f = _class + '_' + npz_f
+				npz_filename = join(training_fodler, npz_f)
+				training_files.append(npz_filename)
+
+				npz =  np.savez(npz_filename, name1=_trajectories)
+				#npz =  np.savez('mat.npz', name1=arr1)
 
 
-					except pd.errors.ParserError:
-						print('Broken file=', join(dirpath, f))
-						broken_files.append(join(dirpath, f))
+			except pd.errors.ParserError:
+				print('Broken file=', join(dirpath, f))
+				broken_files.append(join(dirpath, f))
 
 							
 	print(broken_files)
@@ -140,6 +160,22 @@ def extract_positions(positions):
 	#print(joints_np.shape)
 
 	return joints_np 
+
+def extract_orientations(orientations):
+	joints = []
+
+	for ind in BODY_2_ID.values():
+		joint = []
+		joint.append(positions[ind])
+		joint.append(positions[ind+1])
+		joint.append(positions[ind+2])
+		joints.append(joint)
+	joints_np = np.array(joints)
+	#print(joints_np.shape)
+
+	return joints_np 
+
+
 
 def get_class_from_path(path):
 	_class = ''
