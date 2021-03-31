@@ -91,27 +91,44 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 				or_df = pd.read_csv(path_to_or,
 							 index_col=False)
 				pos_trajectories = []
-				or_trajectorie  = []
+				or_trajectories  = []
 
 				for ind in range(pos_df.shape[0]):
 					positions = pos_df.iloc[ind]
 					#print(positions.shape)	 
-					joints = extract_positions(positions)
-					trajectories.append(joints)						
+					joints = extract_joints(positions)
+					pos_trajectories.append(joints)						
 				
 				for ind in range(or_df.shape[0]):
 					orientations = or_df.iloc[ind]
 					#print(positions.shape)	 
-					joints = extract_orientations(positions)
-					trajectories.append(joints)						
+					joints = extract_joints(orientations)
+					#joints = np.array(orientations)
+					or_trajectories.append(joints)						
 								
-
-				_trajectories = np.array(trajectories)
+				
+				_orientations =  np.array(or_trajectories)
+				_orientations = np.swapaxes(_orientations, 0,1)
+				print('_orientations.shape')
+				print(_orientations.shape)
+				
+				_trajectories = np.array(pos_trajectories)
 				_trajectories = np.swapaxes(_trajectories, 0,1)
+				print('_trajectories.shape')
 				print(_trajectories.shape)
+
+				assert _trajectories.shape == _orientations.shape
+				_trajectories = np.concatenate((_trajectories, _orientations), axis=0)
+				print('_trajectories.shape')
+				print(_trajectories.shape)
+				
 				if normalized:
 					_trajectories -= np.min(_trajectories)
-					_trajectories /= np.max(_trajectories)	
+					_trajectories /= np.max(_trajectories)
+
+
+
+
 				#_trajectories -= np.min(_trajectories)
 				#_trajectories /= np.max(_trajectories)	
 				if plotted_once:
@@ -147,7 +164,7 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 	print(broken_files)
 	return training_files
 
-def extract_positions(positions):
+def extract_joints(positions):
 	joints = []
 
 	for ind in BODY_2_ID.values():
@@ -161,19 +178,7 @@ def extract_positions(positions):
 
 	return joints_np 
 
-def extract_orientations(orientations):
-	joints = []
 
-	for ind in BODY_2_ID.values():
-		joint = []
-		joint.append(positions[ind])
-		joint.append(positions[ind+1])
-		joint.append(positions[ind+2])
-		joints.append(joint)
-	joints_np = np.array(joints)
-	#print(joints_np.shape)
-
-	return joints_np 
 
 
 
@@ -196,6 +201,8 @@ def kinect_positions_to_xyz_(positions):
 		z.append(positions[ind+2])
 	print(len(x))
 	return x,y,z
+
+
 
 
 
