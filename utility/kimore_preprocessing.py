@@ -159,7 +159,7 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 			except pd.errors.ParserError:
 				print('Broken file=', join(dirpath, f))
 				broken_files.append(join(dirpath, f))
-            except IsADirectoryError:
+			except IsADirectoryError:
                 print('No orientation file found')
 							
 	print(broken_files)
