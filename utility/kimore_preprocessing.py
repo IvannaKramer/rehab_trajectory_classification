@@ -122,9 +122,9 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 					ind_list = [] #_trajectories.shape[1] - _orientations.shape[1]
 					for ind in range(_orientations.shape[1], _trajectories.shape[1]):
 						ind_list.append(ind)
-						_trajectories = np.delete(_trajectories, ind_list, axis=1)
-						print('new _trajectories.shape')
-						print(_trajectories.shape)
+					_trajectories = np.delete(_trajectories, ind_list, axis=1)
+					print('new _trajectories.shape')
+					print(_trajectories.shape)
 
 
 				_trajectories = np.concatenate((_trajectories, _orientations), axis=0)
