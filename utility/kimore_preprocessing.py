@@ -160,7 +160,7 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 				print('Broken file=', join(dirpath, f))
 				broken_files.append(join(dirpath, f))
 			except IsADirectoryError:
-                print('No orientation file found')
+				print('No orientation file found')
 							
 	print(broken_files)
 	return training_files
