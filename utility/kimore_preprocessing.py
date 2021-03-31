@@ -117,7 +117,7 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 				print('_trajectories.shape')
 				print(_trajectories.shape)
 
-				if not _trajectories.shape[1] == _orientations.shape[1]:
+				if _trajectories.shape[1] != _orientations.shape[1]:
 					ind_list = [] #_trajectories.shape[1] - _orientations.shape[1]
 					for ind in range(_orientations.shape[1], _trajectories.shape[1]):
 						ind_list.append(ind)
