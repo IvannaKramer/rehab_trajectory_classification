@@ -213,15 +213,15 @@ def create_train_test_dirs(train_files, test_files, npz_only):
 	for cl in CLASSES:	
 		try:
 			if not npz_only:
-				_train_dir = join(train_dir + '/img/', cl)
-				_test_dir = join(test_dir + '/img/', cl)
+				_train_dir = join(train_dir + '_img/', cl)
+				_test_dir = join(test_dir + '_img/', cl)
 				makedirs(_train_dir)
 				makedirs(_test_dir)
 				copy_files(_train_dir, train_files, cl)
 				copy_files(_test_dir, test_files, cl)
 			
-			n_train_dir = join(train_dir + '/npz/', cl)
-			n_test_dir = join(test_dir + '/npz/', cl)
+			n_train_dir = join(train_dir + '_npz/', cl)
+			n_test_dir = join(test_dir + '_npz/', cl)
 			makedirs(n_train_dir)
 			makedirs(n_test_dir)
 			copy_files(n_train_dir, train_files, cl, imgs=False)
@@ -298,7 +298,7 @@ def visualize_skeleton(x,y,z):
 
 
 def create_csv_from_list(name, files):
-	with open(name, "w", newline="") as f:
+	with open(name, "w", newline="", delimiter='\n') as f:
 		writer = csv.writer(f)
 		writer.writerows(files)
 
