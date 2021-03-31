@@ -113,11 +113,17 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 				print(_orientations.shape)
 				
 				_trajectories = np.array(pos_trajectories)
-				_trajectories = np.swapaxes(_trajectories, 0,1)
+				_trajectories = np.swapaxes(_trajectories, 0, 1)
 				print('_trajectories.shape')
 				print(_trajectories.shape)
 
-				assert _trajectories.shape == _orientations.shape
+				if not _trajectories.shape[1] == _orientations.shape[1]:
+					ind_list = [] #_trajectories.shape[1] - _orientations.shape[1]
+					for ind in range(_orientations.shape[1], _trajectories.shape[1]):
+						ind_list.append(ind)
+						np.delete(_trajectories, ind_list, axis=1)
+
+
 				_trajectories = np.concatenate((_trajectories, _orientations), axis=0)
 				print('_trajectories.shape')
 				print(_trajectories.shape)
@@ -178,7 +184,6 @@ def extract_joints(positions):
 	#print(joints_np.shape)
 
 	return joints_np 
-
 
 
 
