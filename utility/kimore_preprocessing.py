@@ -47,6 +47,7 @@ BODY_2_ID = {   'Spine_Base':0,
 
 DATA_NAMES = ['JointPosition', 'JointOrientation']
 CLASSES = ['Parkinson', 'Stroke', 'BackPain', '_Expert', 'NotExpert']
+BIN_CLASSES = ['Healthy', 'Pathology']
 MOVEMENT_CLASSES = ['Es1', 'Es2', 'Es3', 'Es4', 'Es5']
 
 
@@ -79,12 +80,10 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 				elif f.startswith(DATA_NAMES[1]) and f.endswith('.csv'):
 					f_or = f
 			
-			print(dirpath)
-			print(f)
+
 			path_to_pos= join(dirpath, f_pos)
 			path_to_or= join(dirpath, f_or)
-			print(path_to_pos)
-			print(path_to_or)
+
 			try:
 				pos_df = pd.read_csv(path_to_pos,
 							 index_col=False)
@@ -153,7 +152,7 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 					plt.show()		
 					plotted_once = False
 			
-				_class = get_class_from_path(dirpath)
+				_class = get_class_from_class(dirpath)#get_class_from_path(dirpath)
 				npz_f = f_pos.replace('csv', 'npz')
 
 				if not npzs_only:
@@ -171,8 +170,6 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 				training_files.append(npz_filename)
 
 				npz =  np.savez(npz_filename, name1=_trajectories)
-				#npz =  np.savez('mat.npz', name1=arr1)
-
 
 			except pd.errors.ParserError:
 				print('Broken file=', join(dirpath, f_pos))
@@ -234,7 +231,7 @@ def create_train_test_dirs(train_files, test_files ):
 	train_dir = join(_getArgs().output_dir, 'train')
 	test_dir = join(_getArgs().output_dir, 'test')
 
-	for cl in CLASSES:	
+	for cl in BIN_CLASSES:	
 		try:
 			
 			i_train_dir = join(train_dir + '_img/', cl)
