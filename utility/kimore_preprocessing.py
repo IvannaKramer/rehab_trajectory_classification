@@ -157,12 +157,14 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 					plotted_once = False
 			
 				_class = get_class_from_path(dirpath)
-				npz_f = f.replace('csv', 'npz')
+				npz_f = f_pos.replace('csv', 'npz')
 
 				if not npzs_only:
-					f = f.replace('csv', 'png')						
-					f = _class + '_' + f
-					image_filename = join(training_fodler, f)
+					f_pos = f_pos.replace('csv', 'png')						
+					
+					f_pos = _class + '_' + f_pos
+					image_filename = join(training_fodler, f_pos)
+					print(image_filename)
 					matplotlib.image.imsave(image_filename, _trajectories,\
 													  vmin=0, vmax=255)
 				
@@ -316,7 +318,7 @@ def visualize_skeleton(x,y,z):
 
 
 def create_csv_from_list(name, files):
-	with open(name, "w", newline="", delimiter='\n') as f:
+	with open(name, "w", newline="") as f:
 		writer = csv.writer(f)
 		writer.writerows(files)
 
