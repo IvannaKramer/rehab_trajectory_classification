@@ -118,17 +118,18 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 				print(_trajectories.shape)
 
 				if _trajectories.shape[1] != _orientations.shape[1]:
-					print('***************************************************')
 					ind_list = [] #_trajectories.shape[1] - _orientations.shape[1]
 					if _trajectories.shape[1] < _orientations.shape[1]:
-						for ind in range( _trajectories.shape[1], _orientations.shape[1]):
+						for ind in range( _trajectories.shape[1],
+														 _orientations.shape[1]):
 							ind_list.append(ind)
 						_orientations = np.delete(_orientations, ind_list, axis=1)
 					
 						print('new _orinetations.shape')
 						print(_orientations.shape)
 					else:
-						for ind in range( _orientations.shape[1], _trajectories.shape[1]):
+						for ind in range( _orientations.shape[1],
+														 _trajectories.shape[1]):
 							ind_list.append(ind)
 						_trajectories = np.delete(_trajectories, ind_list, axis=1)
 					
@@ -136,7 +137,8 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 						print(_trajectories.shape)
 
 
-				_trajectories = np.concatenate((_trajectories, _orientations), axis=0)
+				_trajectories = np.concatenate((_trajectories, _orientations),
+																		 axis=0)
 				print('_trajectories.shape')
 				print(_trajectories.shape)
 				
@@ -144,11 +146,6 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 					_trajectories -= np.min(_trajectories)
 					_trajectories /= np.max(_trajectories)
 
-
-
-
-				#_trajectories -= np.min(_trajectories)
-				#_trajectories /= np.max(_trajectories)	
 				if plotted_once:
 					print(trajectories)
 					plt.imshow(_trajectories, interpolation='nearest',\
@@ -160,11 +157,12 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 				npz_f = f_pos.replace('csv', 'npz')
 
 				if not npzs_only:
+					print('**********************************')
 					f_pos = f_pos.replace('csv', 'png')						
 					
 					f_pos = _class + '_' + f_pos
 					image_filename = join(training_fodler, f_pos)
-					print(image_filename)
+					print('image_filename=', image_filename)
 					matplotlib.image.imsave(image_filename, _trajectories,\
 													  vmin=0, vmax=255)
 				
@@ -177,10 +175,11 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 
 
 			except pd.errors.ParserError:
-				print('Broken file=', join(dirpath, f))
-				broken_files.append(join(dirpath, f))
+				print('Broken file=', join(dirpath, f_pos))
+				broken_files.append(join(dirpath, f_pos))
 			except IsADirectoryError:
 				print('No orientation file found')
+				broken_files.append(join(dirpath))
 							
 	print(broken_files)
 	return training_files
@@ -211,6 +210,11 @@ def get_class_from_path(path):
 		_class = 'NoClass'
 	return _class
 
+def get_class_from_class(path):
+	if path.find('Expert') != -1:
+		return 'Healthy'
+	else:
+		return 'Pathology'
 
 
 def kinect_positions_to_xyz_(positions):
@@ -226,22 +230,24 @@ def kinect_positions_to_xyz_(positions):
 
 
 
-def create_train_test_dirs(train_files, test_files, npz_only):
+def create_train_test_dirs(train_files, test_files ):
 	train_dir = join(_getArgs().output_dir, 'train')
 	test_dir = join(_getArgs().output_dir, 'test')
 
 	for cl in CLASSES:	
 		try:
-			if not npz_only:
-				_train_dir = join(train_dir + '_img/', cl)
-				_test_dir = join(test_dir + '_img/', cl)
-				makedirs(_train_dir)
-				makedirs(_test_dir)
-				copy_files(_train_dir, train_files, cl)
-				copy_files(_test_dir, test_files, cl)
+			
+			i_train_dir = join(train_dir + '_img/', cl)
+			i_test_dir = join(test_dir + '_img/', cl)
+			makedirs(i_train_dir)
+			makedirs(i_test_dir)
+			copy_files(i_train_dir, train_files, cl)
+			copy_files(i_test_dir, test_files, cl)
 			
 			n_train_dir = join(train_dir + '_npz/', cl)
 			n_test_dir = join(test_dir + '_npz/', cl)
+			print('creating test_dir=', n_test_dir)
+			print('creating n_train_dir=', n_train_dir)
 			makedirs(n_train_dir)
 			makedirs(n_test_dir)
 			copy_files(n_train_dir, train_files, cl, imgs=False)
@@ -255,25 +261,26 @@ def create_train_test_dirs(train_files, test_files, npz_only):
 
 
 def copy_files(dest, training_files, cl, imgs=True):
-    print('dest=', dest)
-    for npz_src in training_files:
-	    if npz_src.find(cl) > -1:
-		    npz_name = npz_src.split('/')[-1]
+    for file_src in training_files:
+	    if file_src.find(cl) > -1:
+		    file_name = file_src.split('/')[-1]
+		    file_dest = join(dest, file_name)
 
 		    if imgs:
-		        im_name = npz_name.replace('npz', 'png')
-		        im_src = npz_src.replace('npz', 'png')
-		        print('dest=', dest)
-		        #im_dest = join(dest, cl)
-
-		        im_dest = join(dest, im_name)
-		        print('im_src=', im_src)
-		        print('im_dist=', im_dest)
-		        copy(im_src, im_dest)
+			    im_name = file_name.replace('npz', 'png')
+			    im_src = file_src.replace('npz', 'png')
+			    print('dest=', dest)
+			    #im_dest = join(dest, cl)
+			    im_dest = join(dest, im_name)
+	#		    print('im_src=', im_src)
+	#		    print('im_dist=', im_dest)
+			    copy(im_src, im_dest)
 		    else:
-		    	npz_dest = join(dest, npz_name)
-		    	copy(npz_src, npz_dest)
+		#	    print('npz_src=',file_src)
+	#		    print('npz_dest=',file_dest)
+			    copy(file_src, file_dest)
 
+			    
 
 
 def divide_test_train(training_files, testing_rate=0.2):
@@ -327,6 +334,6 @@ def create_csv_from_list(name, files):
 if __name__ == '__main__':
     args = _getArgs()
     print(args.input_dir)
-    training_files = convert_trajectories(True, True)
+    training_files = convert_trajectories(False, False)
     train, test = divide_test_train(training_files)
-    create_train_test_dirs(train, test, npz_only=False)
+    create_train_test_dirs(train, test)
