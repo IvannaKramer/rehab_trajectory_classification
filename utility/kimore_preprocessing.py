@@ -42,12 +42,13 @@ BODY_2_ID = {   'Spine_Base':0,
 				'Tip_Left':84,     
 				'Thumb_Left':88,   
 				'Tip_Right':92,    
-				'Thumb_Right':98
+				'Thumb_Right':96
 			}
 
 DATA_NAMES = ['JointPosition', 'JointOrientation']
-CLASSES = ['Parkinson', 'Stroke', 'BackPain', '_Expert', 'NotExpert']
-BIN_CLASSES = ['Healthy', 'Pathology']
+KIMORE_CLASSES = ['Parkinson', 'Stroke', 'BackPain', 'Expert', 'NotExpert']
+TARGET_CLASSES = ['Parkinson', 'Stroke', 'BackPain', 'Healthy']
+#TARGET_CLASSES = ['Healthy', 'Pathology']
 MOVEMENT_CLASSES = ['Es1', 'Es2', 'Es3', 'Es4', 'Es5']
 
 
@@ -152,7 +153,7 @@ def convert_trajectories(npzs_only, normalized, dir_pattern='Raw',
 					plt.show()		
 					plotted_once = False
 			
-				_class = get_class_from_class(dirpath)#get_class_from_path(dirpath)
+				_class = get_class_from_path(dirpath)#get_class_from_path(dirpath)
 				npz_f = f_pos.replace('csv', 'npz')
 
 				if not npzs_only:
@@ -200,27 +201,77 @@ def extract_joints(positions):
 
 def get_class_from_path(path):
 	_class = ''
-	for p in CLASSES:
+	for p in KIMORE_CLASSES:
 		if path.find(p) != -1:
-			_class =  p
+			if path.find('Expert') != -1:
+				_class = 'Healthy'
+			else:
+				_class =  p
 	if len(_class) < 2:
 		_class = 'NoClass'
 	return _class
 
-def get_class_from_class(path):
+
+def get_target_from_class(path):
 	if path.find('Expert') != -1:
 		return 'Healthy'
 	else:
 		return 'Pathology'
 
 
+
 def kinect_positions_to_xyz_(positions):
 	x,y,z = [], [] , []
+	print(positions.shape)
 	for ind in BODY_2_ID.values():
 		x.append(positions[ind])
 		y.append(positions[ind+1])
 		z.append(positions[ind+2])
 	print(len(x))
+	return x,y,z
+
+#list of length 1000 wirh (25,3) array
+def extract_body_part_lists(positions):
+	print(positions)
+	joint_ids = []
+	for i in range(0, 25):
+		joint_ids.append(i)
+	x = []
+	y = []
+	z = []
+	for mot in positions:
+		_x = []
+		_y = []
+		_z = []
+		for pos in mot:
+			print('Pos')
+			print(pos)
+			_x.append(pos[0])
+			_y.append(pos[1])
+			_z.append(pos[2])
+	
+		x.append(_x)
+		y.append(_y)
+		z.append(_z)
+
+	x_np = np.array(x)
+	#x_np = x_np.reshape(x_np.shape[1], x_np.shape[0])
+	print(x_np.shape)
+	y_np = np.array(y)
+	#y_np = y_np.reshape(x_np.shape[1], x_np.shape[0])
+	z_np = np.array(z)
+	#z_np = z_np.reshape(x_np.shape[1], x_np.shape[0])
+	return x_np, y_np, z_np
+			
+
+
+def kinect_pos_to_xyz_np(joints):
+	x,y,z = [], [] , []
+	for pos in joints:
+		x.append(pos[0])
+		y.append(pos[1])
+		z.append(pos[2])
+
 	return x,y,z
 
 
@@ -231,7 +282,7 @@ def create_train_test_dirs(train_files, test_files ):
 	train_dir = join(_getArgs().output_dir, 'train')
 	test_dir = join(_getArgs().output_dir, 'test')
 
-	for cl in BIN_CLASSES:	
+	for cl in TARGET_CLASSES:	
 		try:
 			
 			i_train_dir = join(train_dir + '_img/', cl)
@@ -310,17 +361,6 @@ def get_images():
 
 
 
-def visualize_skeleton(x,y,z):
-	fig=go.Figure(go.Scatter3d(x=x,
-                               y=y,
-                               z=z, 
-                               mode='lines', 
-                               line_width=2, 
-                               line_color='blue'))
-	fig.update_layout(width=600, height=600)
-	fig.show()
-
-
 def create_csv_from_list(name, files):
 	with open(name, "w", newline="") as f:
 		writer = csv.writer(f)
@@ -331,6 +371,6 @@ def create_csv_from_list(name, files):
 if __name__ == '__main__':
     args = _getArgs()
     print(args.input_dir)
-    training_files = convert_trajectories(False, False)
+    training_files = convert_trajectories(False, True)
     train, test = divide_test_train(training_files)
     create_train_test_dirs(train, test)
