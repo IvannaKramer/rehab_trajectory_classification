@@ -1,5 +1,5 @@
 # rehab_trajectory_classification
-This project tackles the classification of the individuals performing physio exercises as healthy and pythological. 
+This project tackles the classification of the individuals performing physio exercises as healthy and pathological. 
 
 # Method
 Method used for trajectories classification is implemented [here](https://github.com/raphaelmemmesheimer/gimme_signals_action_recognition).
