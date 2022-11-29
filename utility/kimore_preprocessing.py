@@ -244,8 +244,6 @@ def extract_body_part_lists(positions):
 		_y = []
 		_z = []
 		for pos in mot:
-			print('Pos')
-			print(pos)
 			_x.append(pos[0])
 			_y.append(pos[1])
 			_z.append(pos[2])
