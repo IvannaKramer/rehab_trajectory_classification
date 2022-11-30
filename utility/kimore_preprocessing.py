@@ -230,9 +230,8 @@ def kinect_positions_to_xyz_(positions):
 	print(len(x))
 	return x,y,z
 
-#list of length 1000 wirh (25,3) array
+#list of length 1000 with (25,3) array
 def extract_body_part_lists(positions):
-	print(positions)
 	joint_ids = []
 	for i in range(0, 25):
 		joint_ids.append(i)

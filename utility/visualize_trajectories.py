@@ -24,14 +24,15 @@ def readKimoreTrajectory(path, f=50):
 	print('pos_df.shape=', pos_df.shape)
 	mot_sequence = []
 	position_seq = []
+
 	for ind in range(pos_df.shape[0]):
 					positions = pos_df.iloc[ind]
 					joints = extract_joints(positions)
 					position_seq.append(joints)
 					x, y, z  = kinect_pos_to_xyz_np(joints)
 					pos = [x,y,z]
-					if ind % f == 0:
-						mot_sequence.append(pos)
+					#if ind % f == 0:
+					mot_sequence.append(pos)
 					#plot_joints(x,z,y)
 	x,y,z = extract_body_part_lists(position_seq)
 	#plot_signals(x)
@@ -49,12 +50,9 @@ def readTorontoTrajectory(path, f=10):
 					positions = pos_df.iloc[ind]
 					position_seq.append(positions)
 					
-					if ind >0 and ind % 12 == 0: 
-						print('ind=', ind)
+					if ind > 0 and ind % 12 == 0: 
 						x, y, z  = extract_toronto(position_seq)
-						#plot_joi
-						
-					#nts(x,z,y, links=k4vLinks)
+						#plot_joints(x,z,y, links=k4vLinks)
 						position_seq = []
 						mot_sequence.append([x, y, z])
 
@@ -81,7 +79,6 @@ def extract_toronto(positions):
 		x.append(pos[0])
 		y.append(pos[1])
 		z.append(pos[2])
-	print(len(x))
 	return x,y,z
 
 
@@ -140,7 +137,7 @@ def plot_signals(mot_signal):
 def plot_joints1(mot_sequence,  links=Kinect_Links):
 	print('Len of mot_sequence', len(mot_sequence))
 	traces = []
-	opac = 0
+	opac = 1
 	for motion in mot_sequence:
 
 		x_joints = motion[0]
@@ -158,7 +155,7 @@ def plot_joints1(mot_sequence,  links=Kinect_Links):
 		    name='markers', 
 		    marker=dict(
 	        	size=8,
-	        	color=z_joints,                # set color to an array/list of desired values
+	        	color=z_joints,         # set color to an array/list of desired values
 	        	colorscale='Viridis',   # choose a colorscale
 	        	opacity=opac
 	    	)
@@ -199,15 +196,15 @@ def animate_joints(mot_sequence,  links=Kinect_Links):
 	print('animate_joints')
 	print('Len of mot_sequence', len(mot_sequence))
 	traces = []
-	opac = 0
+	opac = 1
 	for motion in mot_sequence:
 
 		x_joints = motion[0]
 		y_joints = motion[2]
 		z_joints = motion[1]
 		
-		if opac < 0.95:
-			opac +=0.06
+	#	if opac < 0.95:
+    #		opac +=0.06
 
 		trace1 = go.Scatter3d(
 	    	x=x_joints,
@@ -217,7 +214,7 @@ def animate_joints(mot_sequence,  links=Kinect_Links):
 		    name='markers', 
 		    marker=dict(
 	        	size=8,
-	        	color=z_joints,                # set color to an array/list of desired values
+	        	color=z_joints,         # set color to an array/list of desired values
 	        	colorscale='Viridis',   # choose a colorscale
 	        	opacity=opac
 	    	)
@@ -245,22 +242,19 @@ def animate_joints(mot_sequence,  links=Kinect_Links):
 		    name='lines'
 		)
 
-		traces.append(trace1)
-	#	traces.append(trace2)
+	#	traces.append(trace1)
+		traces.append(trace2)
 	frames = [go.Frame(data=trace) for trace in traces]
 	fig = go.Figure(data=[go.Scatter3d(x=[], y=[], z=[],
                     				  mode="markers")])
 
 
 	fig.update(frames=frames)
-	fig.update_layout(autosize=True,
-		height=600,width=400)
 	
-
 	fig.update_layout(updatemenus=[dict(type="buttons",
                           buttons=[dict(label="Play",
                                         method="animate",
-                                        args=[None, dict(frame=dict(redraw=True,fromcurrent=True, mode='immediate'))      ])])])
+                                        args=[None, dict(frame=dict(redraw=True,fromcurrent=True, mode='immediate'))])])])
 	
 
 
@@ -281,7 +275,7 @@ def plot_joints(x_joints, y_joints, z_joints, links=Kinect_Links):
 	    name='markers', 
 	    marker=dict(
         	size=8,
-        	color=z_joints,                # set color to an array/list of desired values
+        	color=z_joints,         # set color to an array/list of desired values
         	colorscale='Viridis',   # choose a colorscale
         	opacity=0.8
     	)
@@ -314,5 +308,5 @@ def plot_joints(x_joints, y_joints, z_joints, links=Kinect_Links):
 
 if __name__=='__main__':
 	print('Ploting')
-	readKimoreTrajectory('../sample_data/kimore/CG/_Expert/E_ID1/Es1/Raw/JointPosition011214_103748.csv')
-	#readTorontoTrajectory('../sample_data/toronto/H01_Joint_Positions.csv')
+	#readKimoreTrajectory('../sample_data/kimore/GPP/Stroke/S_ID1/Es1/Raw/JointPosition060616_122123.csv')
+	readTorontoTrajectory('../sample_data/toronto/H01_Joint_Positions.csv')
